@@ -6,4 +6,5 @@ block content
         h1= user.name
         p= user.username
         p= user.email
-        img(src='images/uploads/' + user.profileImg.filename)
+        if (user.profileImg)
+            img(src='/images/uploads/' + user.profileImg.filename)

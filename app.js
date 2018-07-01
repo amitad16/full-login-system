@@ -15,6 +15,7 @@ const port = process.env.PORT;
 // Route Files
 const indexRouter = require('./router/index');
 const userRouter = require('./router/user');
+const usersRouter = require('./router/users');
 
 // App initialize
 const app = express();
@@ -24,7 +25,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // Logger
-// app.use(logger('dev'));
+app.use(logger('dev'));
 
 // Body Parser Middleware
 app.use(bodyParser.json());
@@ -59,6 +60,7 @@ app.get('*', function(req,res,next) {
 
 app.use('/', indexRouter);
 app.use('/user', userRouter);
+app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -3,7 +3,7 @@ extends layout
 block content
     .container
         != messages()
-        form.comment-form(method='post', action='/login')
+        form.comment-form(method='post', action='/user/login')
             .form-group
                 label(for='username') Username
                 input#username.form-control(type='text', name='username', placeholder='Username')
@@ -18,6 +18,6 @@ block content
                         .text-danger= errors.password.msg
 
             button.btn.btn-primary.mb-2(type='submit') Login
-            a(href='/forgotPassword') Forgot Password?
+            a(href='/user/forgotPassword') Forgot Password?
         p Don't have an account?
-            a(href='/register') Register
+            a(href='/user/register') Register

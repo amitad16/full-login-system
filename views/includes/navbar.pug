@@ -8,15 +8,15 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
             li.nav-item.active
                 a.nav-link(href='/') Home
             li.nav-item
-                a.nav-link(href='#') Articles
+                a.nav-link(href='#') Link1
             li.nav-item
-                a.nav-link(href='#') Categories
+                a.nav-link(href='#') Link2
         ul.navbar-nav.ml-auto
             if (user)
                 li.nav-item
-                    a.nav-link(href='/logout') Logout
+                    a.nav-link(href='/user/logout') Logout
             else
                 li.nav-item
-                    a.nav-link(href='/login') Login
+                    a.nav-link(href='/user/login') Login
                 li.nav-item
-                    a.nav-link(href='/register') Register
+                    a.nav-link(href='/user/register') Register
