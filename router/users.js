@@ -4,7 +4,7 @@ const router = express.Router();
 const mongoose = require('../server/db/mongoose');
 const { User } = require('../models/user.model');
 const { upload } = require('./helper/multerConfigurations');
-const { ifLoggedIn, ifNotLoggedIn } = require('./helper/accessControl');
+const { ifLoggedIn, ifNotLoggedIn } = require('./helper/accessControlAndValidator');
 
 router.get('/:username', ifLoggedIn, (req, res, next) => {
   User.findOne({ username: req.user.username })

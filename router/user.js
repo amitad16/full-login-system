@@ -1,19 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const {check, validationResult} = require("express-validator/check");
+const { validationResult } = require("express-validator/check");
 const passport = require('passport');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 
-const path = require('path');
-
 const mongoose = require('../server/db/mongoose');
 const { User } = require('../models/user.model');
 const { upload } = require('./helper/multerConfigurations');
-const { ifLoggedIn, ifNotLoggedIn } = require('./helper/accessControl');
+const { ifLoggedIn, ifNotLoggedIn, registrationFormValidation, forgotPasswordFormValidation, resetPasswordFormValidation } = require('./helper/accessControlAndValidator');
 const passportConfig = require('./helper/passport');
-
-const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 // Register Form
 router.get('/register', ifNotLoggedIn, (req, res, next) => {
@@ -41,47 +37,7 @@ router.get('/resetPassword/:resetToken', ifNotLoggedIn, (req, res, next) => {
 });
 
 // Process Register
-router.post('/register', ifNotLoggedIn, upload, [
-  check('name')
-    .trim()
-    .not().isEmpty().withMessage('Name is required')
-    .isLength({ min: 3 }).withMessage('Name must be 3 characters long'),
-  check('username')
-    .trim()
-    .not().isEmpty().withMessage('Username is required')
-    .isLength({ min: 3 }).withMessage('Username must be 3 characters long')
-    .custom((value) => {
-      return new Promise((resolve, reject) => {
-        User.findOne({ 'username': value }, { 'username': 1, '_id': 0 }, function(err, user){
-          if(err) {
-            reject(new Error('Server Error'))
-          }
-          if(Boolean(user)) {
-            reject(new Error('Username already in use'))
-          }
-          resolve(true)
-        });
-      });
-    }),
-  check('email', 'Invalid Email')
-    .not().isEmpty().withMessage('Email is required')
-    .custom((value) => EMAIL_REGEX.test(value) === true).withMessage('Invalid Email')
-    .custom((value) => {
-      return new Promise((resolve, reject) => {
-        User.findOne({ 'email': value }, { 'email': 1, '_id': 0 })
-          .then(user => {
-            if (user)
-              reject(new Error('Email already in use'));
-            resolve(true);
-          });
-      })
-    }),
-  check('password', 'Password must be between 6 and 18 characters')
-    .not().isEmpty().withMessage('Password is required')
-    .isLength({ min: 6, max: 18 }),
-  check('password2', 'Passwords do not match')
-    .custom((value, { req }) => value === req.body.password)
-], (req, res, next) => {
+router.post('/register', ifNotLoggedIn, upload, registrationFormValidation, (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -92,12 +48,28 @@ router.post('/register', ifNotLoggedIn, upload, [
     userInfo.profileImg = req.file;
     const user = new User(userInfo);
 
-    user.save()
-      .then(() => {
+    user.save((err) => {
+      if (err) {
+        if (err.errors !== null) {
+          if (err.errors.name) {
+            errors.name = { msg: err.errors.name.message };
+          }
+          if (err.errors.username) {
+            errors.username = { msg: err.errors.username.message };
+          }
+          if (err.errors.email) {
+            errors.email = { msg: err.errors.email.message };
+          }
+          if (err.errors.password) {
+            errors.password = { msg: err.errors.password.message };
+          }
+          res.render('register', { errors });
+        }
+      } else {
         req.flash('success', 'You are registered and can login');
         res.redirect('/user/login');
-      })
-      .catch(err => res.status(400).send(err));
+      }
+    });
   }
 });
 
@@ -113,21 +85,7 @@ router.post('/login', ifNotLoggedIn, (req, res, next) => {
 });
 
 // Forgot Password
-router.post('/forgotPassword', ifNotLoggedIn, [
-  check('email')
-    .not().isEmpty().withMessage('Email is required')
-    .custom((value) => EMAIL_REGEX.test(value) === true).withMessage('Invalid Email')
-    .custom((value) => {
-      return new Promise((resolve, reject) => {
-        User.findOne({ 'email': value }, { 'email': 1, '_id': 0 })
-          .then(user => {
-            if (!user)
-              reject(new Error('Email is not registered with us'));
-            resolve(true);
-          });
-      })
-    })
-], (req, res) => {
+router.post('/forgotPassword', ifNotLoggedIn, forgotPasswordFormValidation, (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -172,18 +130,12 @@ router.post('/forgotPassword', ifNotLoggedIn, [
   }
 });
 
-router.post('/resetPassword/:resetToken', ifNotLoggedIn, [
-  check('password', 'Password must be between 6 and 18 characters')
-    .not().isEmpty().withMessage('Password is required')
-    .isLength({ min: 6, max: 18 }),
-  check('password2', 'Passwords do not match')
-    .custom((value, { req }) => value === req.body.password)
-], (req, res, next) => {
+router.post('/resetPassword/:resetToken', ifNotLoggedIn, resetPasswordFormValidation, (req, res, next) => {
   const errors = validationResult(req);
   const resetToken = req.params.resetToken;
 
   if (!errors.isEmpty()) {
-    console.log('Errors: ', errors.mapped());
+    console.log('Errors: ', errors.mapped());  // TODO: Find a way to send these errors of reset password
     // res.render('resetPassword', { errors: errors.mapped() });
     if (errors.mapped().password)
       req.flash('error', errors.mapped().password.msg);

@@ -9,13 +9,15 @@ block content
                 input#username.form-control(type='text', name='username', placeholder='Username')
                 if (errors)
                     if (errors.username)
-                        .text-danger= errors.username.msg
+                        .error
+                            .text-danger= errors.username.msg
             .form-group
                 label(for='password') Password
                 input#password.form-control(type='password', name='password', placeholder='Password')
                 if (errors)
                     if (errors.password)
-                        .text-danger= errors.password.msg
+                        .error
+                            .text-danger= errors.password.msg
 
             button.btn.btn-primary.mb-2(type='submit') Login
             a(href='/user/forgotPassword') Forgot Password?

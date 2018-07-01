@@ -1,5 +1,8 @@
 extends layout
 
+block stylesheets
+    link(rel='stylesheet', href='/stylesheets/common.css')
+
 block content
     .container
         form.comment-form(method='post', action='/user/register', enctype='multipart/form-data')
@@ -8,37 +11,43 @@ block content
                 input#name.form-control(type='text', name='name', placeholder='Name')
                 if (errors)
                     if (errors.name)
-                        .text-danger= errors.name.msg
+                        .error
+                            .text-danger= errors.name.msg
             .form-group
                 label(for='username') Username
                 input#username.form-control(type='text', name='username', placeholder='Username')
                 if (errors)
                     if (errors.username)
-                        .text-danger= errors.username.msg
+                        .error
+                            .text-danger= errors.username.msg
             .form-group
                 label(for='email') Email
                 input#email.form-control(type='email', name='email', placeholder='Email')
                 if (errors)
                     if (errors.email)
-                        .text-danger= errors.email.msg
+                        .error
+                            .text-danger= errors.email.msg
             .form-group
                 label(for='password') Password
                 input#password.form-control(type='password', name='password', placeholder='Password')
                 if (errors)
                     if (errors.password)
-                        .text-danger= errors.password.msg
+                        .error
+                            .text-danger= errors.password.msg
             .form-group
                 label(for='password2') Confirm Password
                 input#password2.form-control(type='password', name='password2', placeholder='Confirm Password')
                 if (errors)
                     if (errors.password2)
-                        .text-danger= errors.password2.msg
+                        .error
+                            .text-danger= errors.password2.msg
             .form-group
                 label(for='profileImg') Profile Image:
                 input#profileImg.form-control(type='file', name='profileImg', placeholder='Profile Image')
                 if (errors)
                     if (errors.profileImg)
-                        .text-danger= errors.profileImg.msg
+                        .error
+                            .text-danger= errors.profileImg.msg
 
             button.btn.btn-primary.mb-2(type='submit') Submit
         p Have an account?
