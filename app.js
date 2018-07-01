@@ -14,7 +14,7 @@ const port = process.env.PORT;
 
 // Route Files
 const indexRouter = require('./router/index');
-const usersRouter = require('./router/users');
+const userRouter = require('./router/user');
 
 // App initialize
 const app = express();
@@ -58,7 +58,7 @@ app.get('*', function(req,res,next) {
 });
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/user', userRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

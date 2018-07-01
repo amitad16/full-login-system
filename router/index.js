@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require("express-validator/check");
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const nodemailer = require('nodemailer');
-const multer = require('multer');
 const jwt = require('jsonwebtoken');
 
 const path = require('path');
@@ -12,65 +10,13 @@ const url = require('url');
 
 const mongoose = require('../server/db/mongoose');
 const { User } = require('../models/user.model');
-
-// Multer Configurations
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/images/uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
-
-// Init Upload
-const upload = multer({
-  storage: storage,
-  limits:{fileSize: 1000000},
-  fileFilter: function(req, file, cb){
-    checkFileType(file, cb);
-  }
-}).single('profileImg');
-
-// Check File Type
-let checkFileType = (file, callback) =>{
-  // Allowed ext
-  const filetypes = /jpeg|jpg|png|gif/;
-  // Check ext
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // Check mime
-  const mimetype = filetypes.test(file.mimetype);
-
-  if(mimetype && extname){
-    return callback(null,true);
-  } else {
-    console.log('Images only');
-    callback(new Error('Error: Images Only!'));
-  }
-};
+const { upload } = require('./helper/multerConfigurations');
+const { ensureAuthenticated, restrictNonSessionRoutes } = require('./helper/accessControl');
+const passportConfig = require('./helper/passport');
 
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-// Access Control
-let ensureAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  } else {
-    req.flash('error', 'You are not authorized to view that page.');
-    res.redirect('/login');
-  }
-};
-
-let restrictNonSessionRoutes = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    req.flash('error', 'You are not authorized to view that page.');
-    res.redirect('/');
-  } else {
-    return next();
-  }
-};
-
-// ROUTES////////////////////////////
+// ROUTES////////////////////////////////////////////////////////////////
 router.get('/', ensureAuthenticated, (req, res, next) => {
   User.findOne({ username: req.user.username })
     .select({name: 1, username: 1, email: 1, 'profileImg.filename': 1})
@@ -96,9 +42,9 @@ router.get('/login', restrictNonSessionRoutes, (req, res, next) => {
   res.render('login', { title: 'Login' });
 });
 
-router.get('/logout', (req, res, next) => {
+router.get('/logout', ensureAuthenticated, (req, res, next) => {
   req.logout();
-  req.flash('success', 'You are logged out');
+  req.flash('success', 'You are successfully logged out');
   res.redirect('/login');
 });
 
@@ -157,7 +103,7 @@ router.post('/resetPassword/:resetToken', restrictNonSessionRoutes, [
 });
 
 // Process Register
-router.post('/register', upload, [
+router.post('/register', restrictNonSessionRoutes, upload, [
   check('name', 'Name must be 3 characters long')
     .trim()
     .isLength({ min: 3 }),
@@ -193,36 +139,10 @@ router.post('/register', upload, [
       .catch(err => res.status(400).send(err));}
 });
 
-passport.use(new LocalStrategy(
-  (username, password, done) => {
-    User.findByCredentials(username, (err, user) => {
-      if (err) throw err;
-      if (!user) {
-        return done(null, false, {message: 'Invalid Username or Password'});
-      }
-      User.comparePassword(password, user.password, (err, isMatch) => {
-        if(err) throw err;
-        if(isMatch){
-          return done(null, user);
-        } else {
-          return done(null, false, {message: 'Invalid Username or Password'});
-        }
-      });
-    });
-  }
-));
+// Passport Configurations
+passportConfig.passportConfig();
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-  User.getUserById(id, (err, user) => {
-    done(err, user);
-  });
-});
-
-router.post('/login', (req, res, next) => {
+router.post('/login', restrictNonSessionRoutes, (req, res, next) => {
   console.log("/login: ", req.body);
   passport.authenticate('local', {
     successRedirect: '/',
