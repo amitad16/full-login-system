@@ -2,3 +2,4 @@ node_modules/
 .idea/
 public/bower_components/
 server/config/config.json
+public/images/uploads/*

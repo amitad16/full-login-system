@@ -5,7 +5,7 @@ block stylesheets
 
 block content
     .container
-        form.comment-form(method='post', action='/user/register', enctype='multipart/form-data')
+        form#register-form.comment-form(method='post', action='/user/register', enctype='multipart/form-data')
             .form-group
                 label(for='name') Name
                 input#name.form-control(type='text', name='name', placeholder='Name')
@@ -49,6 +49,6 @@ block content
                         .error
                             .text-danger= errors.profileImg.msg
 
-            button.btn.btn-primary.mb-2(type='submit') Submit
+            button.btn.btn-primary.mb-2.btn-register(type='submit') Submit
         p Have an account?
             a(href='/user/login') Login

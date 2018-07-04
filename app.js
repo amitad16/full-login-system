@@ -25,7 +25,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // Logger
-app.use(logger('dev'));
+// app.use(logger('dev'));
 
 // Body Parser Middleware
 app.use(bodyParser.json());

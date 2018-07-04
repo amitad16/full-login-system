@@ -113,7 +113,7 @@ router.post('/forgotPassword', ifNotLoggedIn, forgotPasswordFormValidation, (req
           html: `<p>Sender Info</p>` +
           `<ul>` +
           `<li>Sender Email: ${req.body.email}</li>` +
-          `<li>Click on link: <a href="http://localhost:3000/user/resetPassword/${user.resetToken}">http://localhost:3000/user/resetPassword/${user.resetToken}</a></li>` +
+          `<li>Click on link: <a href="http://localhost:3000/user/resetPassword/${user.resetToken}">CLICK HERE</a></li>` +
           `</ul>`
         };
 

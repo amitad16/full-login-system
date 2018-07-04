@@ -4,10 +4,10 @@ const path = require('path');
 
 // Multer Configurations
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: (req, file, cb) => {
     cb(null, 'public/images/uploads/');
   },
-  filename: function (req, file, cb) {
+  filename: (req, file, cb) => {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
   }
 });
@@ -16,13 +16,13 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits:{fileSize: 1000000},
-  fileFilter: function(req, file, cb){
+  fileFilter: (req, file, cb) => {
     checkFileType(file, cb);
   }
 }).single('profileImg');
 
 // Check File Type
-let checkFileType = (file, callback) =>{
+let checkFileType = (file, callback) => {
   // Allowed ext
   const filetypes = /jpeg|jpg|png|gif/;
   // Check ext
@@ -30,11 +30,13 @@ let checkFileType = (file, callback) =>{
   // Check mime
   const mimetype = filetypes.test(file.mimetype);
 
-  if(mimetype && extname){
+  if (mimetype && extname) {
     return callback(null,true);
   } else {
     console.log('Images only');
-    callback(new Error('Error: Images Only!'));
+    const errors = {};
+    errors.profileImg = { msg: 'Image formats allowed are jpeg, jpg, png, gif' };
+    callback(errors);
   }
 };
 
